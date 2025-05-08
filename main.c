@@ -13,24 +13,30 @@ struct player {
 	int xp;
 	int health;
 	int played_before;
+	int x;
+	int y;
 };
 
-std::fstream new_game(player user) {
+void new_game(player& user) {
 	string user_name;
 	cout << "Please enter your name: ";
 	cin >> user_name;
 	user.name = user_name;
 
-	std::fstream user_file (user_name + ".txt");
+	std::fstream user_file (user_name + ".txt", std::ios::out | std::ios::trunc);
+
 	user_file << 1 << endl; //sets player starting level
 	user_file << 0 << endl; //sets player starting xp
 	user_file << 100 << endl; //sets player starting health
 	user_file << 0 << endl; //sets that the player hasn't played before
+	user_file << 0 << endl; //sets the user's starting location (x)
+	user_file << 0 << endl; //sets the user's starting location (y)
 
-	return user_file;
+	user_file.close();
+	return;
 }
 
-std::fstream load_game(player user) { 
+std::fstream load_game(player& user) { 
 	string user_name;
 	int file_exists = 0;
 
@@ -85,7 +91,34 @@ void played_before(int played_before) {
       return;
 }
 
-void game(std::fstream& user_file, player user) {
+void move(int& x, int& y) {
+	int distance;
+	string direction;
+
+	cout << "How far would you like to go: ";
+	cin >> distance;
+
+	cout << "What direction: ";
+	cin >> direction;
+
+	if (direction == "north" || direction == "North") {
+		y = y + distance;
+	} else if (direction == "south" || direction == "South") {
+		y = y - distance;
+	} else if (direction == "east" || direction == "East") {
+		x = x - distance;
+	} else if (direction == "west" || direction == "West") {
+		x = x + distance;
+	}
+	return;
+}
+
+void tumbleweed() {
+	cout << "You've arrived at the main to gate to Tumbleweed." << endl; //LEFT OFF HERE
+	return;
+}
+
+void game(std::fstream& user_file, player& user) {
 	string temp_string;
 	int temp_int;
 	string player_action;
@@ -106,12 +139,21 @@ void game(std::fstream& user_file, player user) {
 	temp_int = std::stoi(temp_string);
 	user.played_before = temp_int;
 
+	getline(user_file, temp_string); //sets the user's current location (x)
+	temp_int = std::stoi(temp_string);
+	user.x = temp_int;
+
+	getline(user_file, temp_string); //sets the user's current location (y)
+	temp_int = std::stoi(temp_string);
+	user.y = temp_int;
+
 	user_file.close();
 		
 	cout << endl;
 	cout << "Current Level: " << user.level << endl;
 	cout << "Current XP: " << user.xp << endl;
 	cout << "Current Health: " << user.health << endl;
+	cout << "Current Location: " << "x: " << user.x << " y: " << user.y << endl;
 	cout << endl;
 
 	played_before(user.played_before);
@@ -120,6 +162,12 @@ void game(std::fstream& user_file, player user) {
 	do {
 		cout << "What would you like to do: ";
 		cin >> player_action;
+
+		if (player_action == "move") {
+			move(user.x, user.y);
+			cout << "Current Location:";
+			cout << "x: " << user.x << " y: " << user.y << endl;
+		}
 	} while (player_action != "quit");
 
 	cout << "Would you like to save your progress? (y/n): ";
@@ -132,7 +180,11 @@ void game(std::fstream& user_file, player user) {
 		user_file << user.xp << endl;
 		user_file << user.health << endl;
 		user_file << user.played_before << endl;
+		user_file << user.x << endl;
+		user_file << user.y << endl;
 		user_file.close();
+		cout << "Progress Saved!" << endl;
+		cout << endl;
 	}
 
 	return;
@@ -152,7 +204,8 @@ int main() {
 		cin >> user_choice;
 
 		if (user_choice == 1) {
-			std::fstream user_file = new_game(user);
+			new_game(user);
+			std::fstream user_file(user.name + ".txt");
 			game(user_file,user);
 		} else if (user_choice == 2) {
 			std::fstream user_file = load_game(user);
