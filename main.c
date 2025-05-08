@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <random>
 
 using std::cout;
 using std::cin;
@@ -15,6 +16,7 @@ struct player {
 	int played_before;
 	int x;
 	int y;
+	int tumbleweed;
 };
 
 void new_game(player& user) {
@@ -31,6 +33,7 @@ void new_game(player& user) {
 	user_file << 0 << endl; //sets that the player hasn't played before
 	user_file << 0 << endl; //sets the user's starting location (x)
 	user_file << 0 << endl; //sets the user's starting location (y)
+	user_file << 0 << endl; //sets that the user hasn't entered Tumbleweed
 
 	user_file.close();
 	return;
@@ -110,11 +113,50 @@ void move(int& x, int& y) {
 	} else if (direction == "west" || direction == "West") {
 		x = x + distance;
 	}
+
 	return;
 }
 
-void tumbleweed() {
-	cout << "You've arrived at the main to gate to Tumbleweed." << endl; //LEFT OFF HERE
+void tumbleweed(player& user) { //function that controls the aspects of 'Tumbleweed'
+	string tumbleweed_choice;
+
+	cout << "You've entered Tumbleweed." << endl;
+	cout << endl;
+
+	if (user.tumbleweed == 0) {
+		cout << "Tumbleweed appears to have seen better days. The town consists of a just one main street with buildings lining either side of it. It looks like something right out of an old western film. Some people shuffle through the streets slowly. The buildings are all in rough condition. The town has a couple of services. There's a general store, a saloon, and a sheriff's office for you to explore. All the other buildings seem to be the homes of the townsfolk." << endl;
+	        cout << endl;
+		user.tumbleweed = 1;		
+	}
+
+	do {
+		cout << "What would you like to do in Tumbleweed: ";
+		cin >> tumbleweed_choice;
+
+	} while (tumbleweed_choice == "leave" || tumbleweed_choice == "Leave");
+
+	cout << "You've exited Tumbleweed." << endl;
+	cout << endl;
+
+	return;
+}
+
+void combat(player& user) {
+	cout << "An enemy has ambushed you on your travels!" << endl;
+	cout << endl;
+
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> distr(1, 2);
+
+	int attack_order = distr(gen);
+
+	if (attack_order == 1) {
+		cout << "You got the jump on them!" << endl;
+		cout << endl;
+	} else if (attack_order == 2) {
+		cout << "The enemy got the jump on you!" << endl;
+	}
 	return;
 }
 
@@ -122,6 +164,11 @@ void game(std::fstream& user_file, player& user) {
 	string temp_string;
 	int temp_int;
 	string player_action;
+
+	std::random_device rd; //random number generation for combat
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> distr(1, 100);
+	int combat_chance;
 
 	getline(user_file, temp_string); //set the players current level
 	temp_int = std::stoi(temp_string);
@@ -160,13 +207,32 @@ void game(std::fstream& user_file, player& user) {
 	user.played_before = 1;
 
 	do {
+		if (user.x == 20 && user.y == 0) {
+			cout << "You've arrived at the main gate to Tumbleweed. You can enter at your discretion." << endl;
+			cout << endl;
+		}
 		cout << "What would you like to do: ";
 		cin >> player_action;
 
 		if (player_action == "move") {
 			move(user.x, user.y);
+
+			combat_chance = distr(gen);
+			if (combat_chance > 50) {
+				combat(user);
+			}
 			cout << "Current Location:";
 			cout << "x: " << user.x << " y: " << user.y << endl;
+
+
+
+		} else if (player_action == "enter" || player_action == "Enter") {
+			if (user.x == 20 && user.y == 0) {
+				tumbleweed(user);
+			} else {
+				cout << "There is no town or structure to enter here." << endl;
+				cout << endl;
+			}
 		}
 	} while (player_action != "quit");
 
@@ -216,5 +282,7 @@ int main() {
 	} while (user_choice != 4);
 	
 	cout << "Thanks for playing!\n";
+	return 0;
+}
 	return 0;
 }
