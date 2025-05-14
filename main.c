@@ -17,6 +17,14 @@ struct player {
 	int x;
 	int y;
 	int tumbleweed;
+	int attack_damage;
+	int healing_packs;
+};
+
+struct basic_enemy {
+	string name;
+	int health;
+	int attack_damage;
 };
 
 void new_game(player& user) {
@@ -34,6 +42,8 @@ void new_game(player& user) {
 	user_file << 0 << endl; //sets the user's starting location (x)
 	user_file << 0 << endl; //sets the user's starting location (y)
 	user_file << 0 << endl; //sets that the user hasn't entered Tumbleweed
+	user_file << 10 << endl; //sets the player's base attack damage
+	user_file << 5 << endl; //sets the player's starting healing items
 
 	user_file.close();
 	return;
@@ -133,7 +143,7 @@ void tumbleweed(player& user) { //function that controls the aspects of 'Tumblew
 		cout << "What would you like to do in Tumbleweed: ";
 		cin >> tumbleweed_choice;
 
-	} while (tumbleweed_choice == "leave" || tumbleweed_choice == "Leave");
+	} while (tumbleweed_choice != "leave" && tumbleweed_choice != "Leave");
 
 	cout << "You've exited Tumbleweed." << endl;
 	cout << endl;
@@ -142,7 +152,7 @@ void tumbleweed(player& user) { //function that controls the aspects of 'Tumblew
 }
 
 void combat(player& user) {
-	cout << "An enemy has ambushed you on your travels!" << endl;
+	cout << "An enemy has ambushed you on your travels! A crazed combat automaton raises its sword for combat." << endl;
 	cout << endl;
 
 	std::random_device rd;
@@ -150,13 +160,79 @@ void combat(player& user) {
 	std::uniform_int_distribution<> distr(1, 2);
 
 	int attack_order = distr(gen);
+	int attack_choice;
 
-	if (attack_order == 1) {
-		cout << "You got the jump on them!" << endl;
-		cout << endl;
-	} else if (attack_order == 2) {
-		cout << "The enemy got the jump on you!" << endl;
-	}
+	basic_enemy enemy;
+
+	enemy.name = "Combat Automaton";
+	enemy.health = 50;
+	enemy.attack_damage = 5;
+
+
+	do {
+		if (attack_order == 1) {
+			cout << "It's your turn!" << endl;
+			cout << endl;
+
+			cout << "What would you like to do?" << endl;
+			cout << endl;
+			cout << "1 - Attack" << endl;
+			cout << "2 - Heal" << endl;
+			cout << "3 - Evade" << endl;
+			cout << "4 - Flee" << endl;
+			cin >> attack_choice;
+
+			if (attack_choice == 1) {
+				cout << "You swing your blade at the enemy." << endl;
+				cout << endl;
+				cout << "The attack lands! You inflict " << user.attack_damage << " damage!" << endl;
+				cout << endl;
+				enemy.health = enemy.health - user.attack_damage;
+				if (enemy.health <= 0) {
+					cout << "You've defeated the enemy!" << endl;
+					attack_order = 3;
+				} else {
+					attack_order = 2;
+				}
+			}
+			if (attack_choice == 2) {
+				cout << "You have " << user.healing_packs << " healing packs. Would you like to use one to heal 25 HP?" << endl;
+				cout << "1 - Yes" << endl;
+				cout << "2 - No" << endl;
+				cin >> attack_choice;
+
+				if (attack_choice == 1) {
+					if (user.health == 100) {
+						cout << "You're already at max health!" << endl;
+						cout << endl;
+						attack_order = 1;
+					} else if (user.health < 100) {
+						cout << "You use one of your healing packs." << endl;
+						cout << endl;
+
+						user.health = user.health + 25;
+						user.healing_packs = user.healing_packs - 1;
+						if (user.health > 100) {
+							cout << "You are now at max health!" << endl;
+							cout << endl;
+							user.health = 100;
+							attack_order = 2;
+						} else { 
+							cout << "You are now at " << user.health << " health!" << endl;
+						       cout << endl;	
+						}
+					}
+				} else if (attack_choice == 2) {
+					cout << "You choose not to heal." << endl;
+					cout << endl;
+					attack_order = 1;
+				}
+			}
+		} else if (attack_order == 2) {
+			cout << "It's the enemy's turn!" << endl;
+			attack_order = 1;
+		}
+	} while (attack_order != 3);
 	return;
 }
 
@@ -193,6 +269,18 @@ void game(std::fstream& user_file, player& user) {
 	getline(user_file, temp_string); //sets the user's current location (y)
 	temp_int = std::stoi(temp_string);
 	user.y = temp_int;
+
+	getline(user_file, temp_string); //sets if the user has visited Tumbleweed or not
+	temp_int = std::stoi(temp_string);
+	user.tumbleweed = temp_int;
+
+	getline(user_file, temp_string); //sets the user's attack damage
+	temp_int = std::stoi(temp_string);
+	user.attack_damage = temp_int;
+  
+	getline(user_file, temp_string); //sets the user's current amount of healing items
+	temp_int = std::stoi(temp_string);
+	user.healing_packs = temp_int;
 
 	user_file.close();
 		
@@ -248,6 +336,9 @@ void game(std::fstream& user_file, player& user) {
 		user_file << user.played_before << endl;
 		user_file << user.x << endl;
 		user_file << user.y << endl;
+		user_file << user.tumbleweed << endl;
+		user_file << user.attack_damage << endl;
+		user_file << user.healing_packs << endl;
 		user_file.close();
 		cout << "Progress Saved!" << endl;
 		cout << endl;
