@@ -2,6 +2,8 @@
 #include <fstream>
 #include <string>
 #include <random>
+#include <cstdlib>
+#include <ctime>
 
 using std::cout;
 using std::cin;
@@ -161,6 +163,7 @@ void combat(player& user) {
 
 	int attack_order = distr(gen);
 	int attack_choice;
+	int player_evade = 0;
 
 	basic_enemy enemy;
 
@@ -171,6 +174,7 @@ void combat(player& user) {
 
 	do {
 		if (attack_order == 1) {
+			player_evade = 0;
 			cout << "It's your turn!" << endl;
 			cout << endl;
 
@@ -228,9 +232,121 @@ void combat(player& user) {
 					attack_order = 1;
 				}
 			}
-		} else if (attack_order == 2) {
+			if (attack_choice == 3) {
+				cout << "You choose to attempt to evade the enemy's next attack." << endl;
+				cout << endl;
+
+				player_evade = 1;
+				attack_order = 2;
+			}
+			if (attack_choice == 4) {
+				cout << "You attempt to flee!" << endl;
+				cout << endl;
+
+				srand(time(0));
+				int flee_result = rand() % 5 + 1;
+
+				if (flee_result == 5) {
+					cout << "You managed to escape successfully!" << endl;
+					cout << endl;
+					attack_order = 3;
+				} else {
+					cout << "The enemy foiled your escape!" << endl;
+					cout << endl;
+					attack_order = 2;
+				}
+			}
+		} if (attack_order == 2) {
 			cout << "It's the enemy's turn!" << endl;
-			attack_order = 1;
+
+			if (enemy.health == 50) {
+				cout << "The enemy goes for an attack!" << endl;
+				cout << endl;
+
+				if (player_evade == 0) {
+					cout << "You don't attempt to evade. The attack lands for " << enemy.attack_damage << " damage!" << endl;
+					cout << endl;
+
+					user.health = user.health - enemy.attack_damage;
+
+					cout << "You now have " << user.health << " health left." << endl;
+					cout << endl;
+					attack_order = 1;
+				} else {
+					cout << "You attempt to evade!" << endl;
+					cout << endl;
+
+					srand(time(0));
+					int evade_result = rand() % 2 + 1;
+
+					if (evade_result == 1) {
+						cout << "You failed to evade! The attack lands for " << enemy.attack_damage << " damage!" <<  endl;
+						cout << endl;
+
+						user.health = user.health - enemy.attack_damage;
+
+						cout << "You now have " << user.health << " health left." << endl;
+						cout << endl;
+						attack_order = 1;
+					} else {
+						cout << "Your evade was a success! The enemy missed!" << endl;
+						cout << endl;
+						attack_order = 1;
+					}
+				}
+			} else {
+				srand(time(0));
+				int enemy_health_chance = rand() % 3 + 1;
+
+				if (enemy_health_chance == 3) {
+					cout << "The enemy has healed for 10 damage!" << endl;
+					cout << endl;
+
+					enemy.health = enemy.health + 10;
+
+					if (enemy.health > 50) {
+						enemy.health = 50;
+					}
+
+					attack_order = 1;
+				} else {
+					cout << "The enemy goes for an attack!" << endl;
+					cout << endl;
+
+					if (player_evade == 0) {
+						cout << "You don't attempt to evade. The attack lands for " << enemy.attack_damage << " damage!" << endl;
+						cout << endl;
+
+						user.health = user.health - enemy.attack_damage;
+
+						cout << "You now have " << user.health << " health left." << endl;
+						cout << endl;
+						attack_order = 1;
+					} else {
+						cout << "You attempt to evade!" << endl;
+						cout << endl;
+
+						srand(time(0));
+						int evade_result = rand() % 2 + 1;
+
+						if (evade_result == 1) {
+							cout << "You failed to evade! The attack lands for " << enemy.attack_damage << " damage!" << endl;
+							cout << endl;
+
+							user.health = user.health - enemy.attack_damage;
+
+							cout << "You now have " << user.health << " health left." << endl;
+							cout << endl;
+							attack_order = 1;
+						} else {
+							cout << "Your evade was a success! The enemy missed." << endl;
+							cout << endl;
+
+							attack_order = 1;
+						}
+					}
+				}
+      			}
 		}
 	} while (attack_order != 3);
 	return;
@@ -373,7 +489,5 @@ int main() {
 	} while (user_choice != 4);
 	
 	cout << "Thanks for playing!\n";
-	return 0;
-}
 	return 0;
 }
