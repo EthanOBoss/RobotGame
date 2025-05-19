@@ -131,6 +131,7 @@ void move(int& x, int& y) {
 
 void tumbleweed(player& user) { //function that controls the aspects of 'Tumbleweed'
 	string tumbleweed_choice;
+	int tumbleweed_bool;
 
 	cout << "You've entered Tumbleweed." << endl;
 	cout << endl;
@@ -144,6 +145,33 @@ void tumbleweed(player& user) { //function that controls the aspects of 'Tumblew
 	do {
 		cout << "What would you like to do in Tumbleweed: ";
 		cin >> tumbleweed_choice;
+
+		if (tumbleweed_choice == "store" || tumbleweed_choice == "Store") {
+			cout << "You've entered the general store. Here you can top off on health packs." << endl;
+			cout << endl;
+
+			cout << "Would you like to top off on health packs?" << endl;
+			cout << "1 - Yes" << endl;
+			cout << "2 - No" << endl;
+			cout << "Your choice:";
+			cin >> tumbleweed_bool;
+
+			if (tumbleweed_bool == 1) {
+				user.healing_packs = 5;
+				cout << "You've maxed out your health packs." << endl;
+				cout << endl;
+
+				cout << "You exit the general store." << endl;
+				cout << endl;
+			} if (tumbleweed_bool == 2) {
+				cout << "You choose not to grab any health packs." << endl;
+				cout << endl;
+
+				cout << "You exit the general store." << endl;
+				cout << endl;
+			}
+
+		}
 
 	} while (tumbleweed_choice != "leave" && tumbleweed_choice != "Leave");
 
